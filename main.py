@@ -5,6 +5,14 @@ from pathlib import Path
 
 filepaths = glob.glob("invoices/*xlsx")
 
+
+def set_cell_width(num):
+    if num == 1 or num == 2:
+        return 50
+    else:
+        return 30
+
+
 for filepath in filepaths:
     pdf = FPDF(orientation='P', unit="mm", format="A4")
     pdf.add_page()
@@ -27,10 +35,7 @@ for filepath in filepaths:
 
     # Add Header
     for i in range(0, len(columns) - 1):
-        if i == 1 or i == 2:
-            width = 50
-        else:
-            width = 30
+        width = set_cell_width(i)
         pdf.cell(w=width, h=8, txt=columns[i], border=1)
 
     pdf.cell(w=30, h=8, txt=columns[len(columns) - 1], border=1, ln=1)
@@ -44,5 +49,22 @@ for filepath in filepaths:
         pdf.cell(w=50, h=8, txt=str(row["amount_purchased"]), border=1)
         pdf.cell(w=30, h=8, txt=str(row["price_per_unit"]), border=1)
         pdf.cell(w=30, h=8, txt=str(row["total_price"]), border=1, ln=1)
+
+    # Get Total Price
+    total_sum = df["total_price"].sum()
+    pdf.set_font(family="Times", size=10)
+    pdf.set_text_color(200, 80, 80)
+
+    for i in range(0, len(columns) - 1):
+        width = set_cell_width(i)
+        pdf.cell(w=width, h=8, txt="", border=1)
+
+    pdf.cell(w=30, h=8, txt=str(total_sum), border=1, ln=1)
+    pdf.set_font(family="Times", size=12)
+    pdf.set_text_color(80, 80, 80)
+    pdf.cell(w=30, h=8, txt=f"The total price is CAD ${float(total_sum)}", ln=1)
+    pdf.set_font(family="Times", size=14, style='B')
+    pdf.cell(w=25, h=8, txt=f"PythonHow ")
+    pdf.image("pythonhow.png", w=10)
 
     pdf.output(f"PDFs/{filename}.pdf")
